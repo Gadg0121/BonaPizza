@@ -1,2 +1,412 @@
-# BonaPizza
-Restaurante Bona Pizza
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bona Pizza - Chat con Mesero</title>
+  <link rel="icon" type="image/jpeg" href="https://i.imgur.com/yB7XJzk.png" />
+  <style>
+    :root {
+      --rojo: #ff4b2b;
+      --amarillo: #ffcc00;
+      --verde: #00a86b;
+      --azul: #0057b7;
+      --bg: #fff8e7;
+      --texto: #212121;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: linear-gradient(135deg, var(--azul) 0%, var(--verde) 100%);
+      color: var(--texto);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    /* Header y logo responsive */
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      animation: fadeInDown 1s ease;
+    }
+    header img {
+      width: 80%;           /* Ocupa 80% del contenedor */
+      max-width: 220px;     /* No crecerá más de 220px */
+      min-width: 120px;     /* No se reducirá demasiado en móviles */
+      height: auto;         /* Mantiene proporciones */
+      border-radius: 15px;
+      animation: zoomIn 2s ease, float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
+      transition: transform 0.4s ease, filter 0.4s ease;
+    }
+    header img:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 20px var(--amarillo));
+    }
+
+    /* Contenedor principal */
+    .container {
+      width: 90%;
+      max-width: 480px;
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      animation: fadeInUp 1s ease;
+    }
+
+    h2, h3 {
+      color: var(--rojo);
+      text-align: center;
+      margin-bottom: 10px
+    }
+    p {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    /* Login */
+    .login {
+      text-align: center;
+    }
+    .login input {
+      padding: 12px;
+      border: 2px solid var(--azul);
+      border-radius: 8px;
+      width: 80%;
+      max-width: 300px;
+      outline: none;
+      font-size: 16px;
+      text-align: center;
+      transition: 0.3s;
+    }
+    .login input:focus {
+      border-color: var(--verde);
+      box-shadow: 0 0 8px rgba(0, 168, 107, 0.5);
+    }
+
+    .btn {
+      background: var(--verde);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+      background: var(--rojo);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .btn-secondary {
+      background: var(--azul);
+    }
+    .btn-secondary:hover {
+      background: var(--rojo);
+    }
+
+    /* Chat rápido */
+    .chat {
+      margin-top: 20px;
+      text-align: center;
+      animation: fadeIn 1s ease;
+    }
+    .chat button {
+      margin: 8px;
+      background: var(--azul);
+      border: none;
+      color: white;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 250px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .chat button:hover {
+      transform: scale(1.05);
+      background: var(--verde);
+    }
+    .chat .response {
+      margin-top: 20px;
+      font-weight: bold;
+      color: var(--rojo);
+      min-height: 28px;
+      font-size: 1.1em;
+      transition: all 0.5s ease;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: rgba(255, 204, 0, 0.1);
+    }
+
+    /* Estado del mesero */
+    .mesero-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--verde);
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    /* Historial de mensajes */
+    .message-history {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 15px;
+      text-align: left;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 8px;
+      background-color: #f5f5f5;
+    }
+    .message-time {
+      font-size: 0.8em;
+      color: #777;
+    }
+
+    /* Notificación */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      background-color: var(--verde);
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateX(150%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    .notification.show {
+      transform: translateX(0);
+    }
+    .notification.error {
+      background-color: var(--rojo);
+    }
+
+    /* Animaciones */
+    @keyframes fadeIn {
+      from { opacity: 0 }
+      to { opacity: 1 }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Adaptación móvil */
+    @media (max-width: 600px) {
+      header img {
+        width: 60%;       /* Más pequeño en móviles */
+        max-width: 180px;
+      }
+      .container {
+        padding: 20px;
+      }
+      .chat button {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="notification" id="notification"></div>
+  
+  <header>
+    <img src="https://i.imgur.com/yB7XJzk.png" alt="Logo Bona Pizza" />
+  </header>
+  
+  <div class="container">
+    <section class="login" id="loginSection">
+      <h2>Bienvenido a Bona Pizza</h2>
+      <p>Ingresa el código de tu mesa para comunicarte con tu mesero:</p>
+      <input type="text" id="mesaCodigo" placeholder="Ejemplo: MESA5" />
+      <br>
+      <button class="btn" onclick="iniciarSesion()">Entrar</button>
+    </section>
+    
+    <section id="chatSection" style="display:none">
+      <div class="mesero-status">
+        <div class="status-dot"></div>
+        <span id="meseroAsignado"></span>
+      </div>
+      <h2 id="tituloMesa"></h2>
+      <div class="chat">
+        <h3>Chat rápido con tu mesero</h3>
+        <p>Selecciona una acción:</p>
+        <div>
+          <button onclick="enviarMensaje('Pedir servilletas')">🧻 Pedir servilletas</button>
+          <button onclick="enviarMensaje('Limpiar mesa')">🧽 Limpiar mesa</button>
+          <button onclick="enviarMensaje('Pedir cuenta')">💵 Pedir la cuenta</button>
+          <button onclick="enviarMensaje('Retirar platos y cubiertos')">🍽️ Retirar platos y cubiertos</button>
+          <button onclick="mostrarMensajePersonalizado()">✏️ Mensaje personalizado</button>
+        </div>
+        <div class="message-history" id="messageHistory"></div>
+        <div class="response" id="respuestaMesero"></div>
+        <button class="btn btn-secondary" onclick="volverAlLogin()">Volver</button>
+      </div>
+    </section>
+  </div>
+  
+  <script>
+    const meseros = ["Luis", "Ana", "Carlos", "María", "Jorge", "Sofía"];
+    let messageHistory = [];
+
+    function iniciarSesion() {
+      const codigo = document.getElementById('mesaCodigo').value.trim();
+      if (!codigo) {
+        mostrarNotificacion('Introduce el código de la mesa', 'error');
+        return;
+      }
+      if (codigo.length < 3) {
+        mostrarNotificacion('El código debe tener al menos 3 caracteres', 'error');
+        return;
+      }
+      const indice = Math.abs(hash(codigo)) % meseros.length;
+      const mesero = meseros[indice];
+      localStorage.setItem('mesa', codigo);
+      localStorage.setItem('mesero', mesero);
+      messageHistory = [];
+      actualizarHistorialMensajes();
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('chatSection').style.display = 'block';
+      document.getElementById('tituloMesa').textContent = `Mesa: ${codigo}`;
+      document.getElementById('meseroAsignado').textContent = `Te atiende: ${mesero}`;
+      mostrarNotificacion(`Conectado a la mesa ${codigo}. Tu mesero es ${mesero}`);
+    }
+
+    function enviarMensaje(mensaje) {
+      const mesero = localStorage.getItem('mesero');
+      const timestamp = new Date().toLocaleTimeString();
+      messageHistory.push({ type: 'sent', message: mensaje, time: timestamp });
+      actualizarHistorialMensajes();
+
+      const respuesta = document.getElementById('respuestaMesero');
+      respuesta.style.opacity = '0';
+      setTimeout(() => {
+        respuesta.textContent = `Has solicitado: "${mensaje}". ${mesero} atenderá tu petición en breve.`;
+        respuesta.style.opacity = '1';
+        setTimeout(() => {
+          const respuestas = [
+            `Perfecto, ${mesero} viene en camino.`,
+            `${mesero} ha recibido tu solicitud.`,
+            `En un momento ${mesero} atenderá tu petición.`,
+            `${mesero} está en camino para ayudarte.`
+          ];
+          const respuestaAleatoria = respuestas[Math.floor(Math.random() * respuestas.length)];
+          messageHistory.push({ type: 'received', message: respuestaAleatoria, time: new Date().toLocaleTimeString() });
+          actualizarHistorialMensajes();
+        }, 2000);
+      }, 300);
+
+      setTimeout(() => {
+        respuesta.style.opacity = '0';
+        setTimeout(() => { respuesta.textContent = ''; respuesta.style.opacity = '1'; }, 500);
+      }, 6000);
+    }
+
+    function mostrarMensajePersonalizado() {
+      const mensaje = prompt("Escribe tu mensaje personalizado para el mesero:");
+      if (mensaje && mensaje.trim() !== "") enviarMensaje(mensaje.trim());
+    }
+
+    function actualizarHistorialMensajes() {
+      const historyElement = document.getElementById('messageHistory');
+      historyElement.innerHTML = '';
+      messageHistory.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        timeSpan.textContent = msg.time;
+        const messageText = document.createElement('div');
+        messageText.textContent = msg.message;
+
+        if (msg.type === 'sent') {
+          messageDiv.style.backgroundColor = 'rgba(0, 168, 107, 0.1)';
+          messageDiv.style.textAlign = 'right';
+        } else {
+          messageDiv.style.backgroundColor = 'rgba(0, 87, 183, 0.1)';
+          messageDiv.style.textAlign = 'left';
+        }
+
+        messageDiv.appendChild(timeSpan);
+        messageDiv.appendChild(messageText);
+        historyElement.appendChild(messageDiv);
+      });
+      historyElement.scrollTop = historyElement.scrollHeight;
+    }
+
+    function volverAlLogin() {
+      document.getElementById('chatSection').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('mesaCodigo').value = '';
+    }
+
+    function mostrarNotificacion(mensaje, tipo = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = mensaje;
+      notification.className = 'notification';
+      if (tipo === 'error') notification.classList.add('error');
+      notification.classList.add('show');
+      setTimeout(() => { notification.classList.remove('show'); }, 3000);
+    }
+
+    function hash(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) {
+        h = ((h << 5) - h) + str.charCodeAt(i);
+        h |= 0;
+      }
+      return h;
+    }
+
+    document.getElementById('mesaCodigo').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') iniciarSesion();
+    });
+  </script>
+</body>
+</html>
